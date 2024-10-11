@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  password      String
+  role          Role     @default(USER)
+  shopId        String?
+  shop          Shop?    @relation(fields: [shopId], references: [id])
+  reservations  Reservation[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Car {
+  id            String   @id @default(cuid())
+  name          String
+  model         String
+  licensePlate  String   @unique
+  shopId        String
+  shop          Shop     @relation(fields: [shopId], references: [id])
+  reservations  Reservation[]
+  maintenances  Maintenance[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Shop {
+  id            String   @id @default(cuid())
+  name          String
+  address       String
+  users         User[]
+  cars          Car[]
+  reservations  Reservation[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Reservation {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  carId         String
+  car           Car      @relation(fields: [carId], references: [id])
+  shopId        String
+  shop          Shop     @relation(fields: [shopId], references: [id])
+  startTime     DateTime
+  endTime       DateTime
+  status        ReservationStatus @default(PENDING)
+  startMileage  Int?
+  endMileage    Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Maintenance {
+  id            String   @id @default(cuid())
+  carId         String
+  car           Car      @relation(fields: [carId], references: [id])
+  startTime     DateTime
+  endTime       DateTime
+  description   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  SHOP_ADMIN
+  ADMIN
+}
+
+enum ReservationStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
